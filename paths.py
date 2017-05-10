@@ -1,1 +1,1 @@
-DATA_FOLDER = '/path/to/data'
+DATA_FOLDER = '/data'
