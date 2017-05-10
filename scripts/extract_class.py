@@ -20,7 +20,10 @@ def extract_class(class_name, extension='jpg'):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print('Usage:\npython %s class_name extension')
+    if len(sys.argv) not in [2, 3]:
+        print('Usage:\npython %s class_name [extension]')
     else:
-        extract_class(sys.argv[1], sys.argv[2])
+        if sys.argv[2] != '':
+            extract_class(sys.argv[1], sys.argv[2])
+        else:
+            extract_class(sys.argv[1])
