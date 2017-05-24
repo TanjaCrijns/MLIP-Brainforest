@@ -2,6 +2,7 @@ from __future__ import division
 
 import os
 import numpy as np
+import random
 from preprocess import *
 
 def get_data(data_df, data_folder, labels, batch_size=32, shuffle=True,
@@ -34,18 +35,22 @@ def get_data(data_df, data_folder, labels, batch_size=32, shuffle=True,
         data = data_df
         n = len(data)
         if shuffle:
-            data = np.random.permutation(data)
+            combined = list(zip(data, labels))
+            random.shuffle(combined)
+            data[:], labels[:] = zip(*combined)
         data = list(data)
 
         # Double to allow for larger batch sizes
         data += data
         i = 0
-        while i < n:
+        while i + batch_size - 1 < n:
             img_batch = np.zeros((batch_size, 3) + img_size, dtype=np.float32)
             label_batch = np.zeros((batch_size, n_classes), dtype=np.uint8)
             label_count = np.zeros(n_classes)
             j = 0 
             while j < batch_size:
+                if i >= n:
+                    i = 0
                 img_name = data[i]
                 label = labels[i]
                 i += 1
@@ -60,12 +65,13 @@ def get_data(data_df, data_folder, labels, batch_size=32, shuffle=True,
                 img = img[:,:,:3]
                 img = preprocess(img, target_size=img_size, 
                                 augmentation=augmentation, 
-                                zero_center=True, scale=1./255.,
+                                zero_center=False, scale=1./255.,
                                 **kwargs)
                 img_batch[j] = img
                 label_batch[j] = label
                 j += 1
             yield img_batch, label_batch
+        
 
 def get_test_data(files, batch_size=4, img_size=(720, 1280), **kwargs):
     """
