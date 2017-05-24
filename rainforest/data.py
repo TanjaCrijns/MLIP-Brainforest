@@ -1,9 +1,9 @@
 import pandas as pd
 import sys
-sys.path.insert(0, '..')
+sys.path.append('..')
 import paths
 
-data_path = ('..' + paths.DATA_FOLDER)
+data_path = paths.DATA_FOLDER
 
 labels = ['agriculture', 'artisinal_mine', 'bare_ground', 'blooming',
           'blow_down', 'clear', 'cloudy', 'conventional_mine', 'cultivation',

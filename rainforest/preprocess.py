@@ -33,14 +33,15 @@ def load_image(path):
     - path : the path of the image file
 
     # Returns
-    The image as a numpy array of ints of hape (height, width)
+    The image as a numpy array of ints of shape (height, width)
     """
-    return cv2.imread(path, cv2.IMREAD_COLOR)[:, :, ::-1]
+    rgbs_image = cv2.imread(path, cv2.IMREAD_COLOR)[:, :, ::-1]
+    return rgbs_image[..., :3]
 
 def preprocess(image, target_size=None, augmentation=True, mask=None,
                zero_center=False, scale=1., dim_ordering='th',
-               to_bgr=False, flip=False, shift_x=0, shift_y=0, rot_range=0,
-               elastic_trans=False, colorize=False):
+               to_bgr=False, hflip=False, vflip=False, shift_x=0, shift_y=0,
+               rot_range=0, elastic_trans=False, colorize=False):
     """
     Preprocess an image, possibly with random augmentations and
     a mask with the same augmentations
@@ -56,7 +57,8 @@ def preprocess(image, target_size=None, augmentation=True, mask=None,
     - scale : multiply each pixel value in the image by this value
     - dim_ordering : if 'th', transpose image to (channel, height, width)
     - to_bgr : convert the image to BGR colorspace
-    - flip : if True 50% chance of flipping the image horizontally
+    - hflip : if True 50% chance of flipping the image horizontally
+    - vflip : if True 50% chance of flipping the image vertically
     - shift_x : randomly shift the image by this amount 
                 in pixels horizontally [-shift_x, shift_x]
     - shift_y : randomly shift the image by this amount
@@ -97,11 +99,16 @@ def preprocess(image, target_size=None, augmentation=True, mask=None,
             image = histogram_colorization(target, image)
         
         
-        # flip
-        if flip and np.random.randint(2) == 1:
+        # flips
+        if hflip and np.random.randint(2) == 1:
             image = np.fliplr(image)
             if mask is not None:
                 mask = np.fliplr(mask)
+
+        if vflip and np.random.randint(2) == 1:
+            image = np.flipud(image)
+            if mask is not None:
+                mask = np.flipud(mask)
         
         # translate
         shift_x = np.random.randint(-shift_x, shift_x+1)

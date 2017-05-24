@@ -45,7 +45,7 @@ def dice_coef_loss(y_true, y_pred):
 def bin_cross(y_true, y_pred):
     y_true_f = K.flatten(y_true[:, 1, :, :])
     y_pred_f = K.flatten(y_pred[:, 1, :, :])
-    return K.sum(binary_crossentropy(y_true_f, y_pred_f))
+    return K.mean(K.binary_crossentropy(y_true_f, y_pred_f))
 
 
 def flat_cent(y_true, y_pred):
@@ -55,7 +55,7 @@ def flat_cent(y_true, y_pred):
     y_pred = K.permute_dimensions(y_pred, (0, 2, 3, 1))
     y_pred = K.reshape(y_pred, (-1, 2))
 
-    return K.categorical_crossentropy(y_true, y_pred)
+    return K.mean(K.categorical_crossentropy(y_true, y_pred))
 
 
 
@@ -72,7 +72,7 @@ def conv_bn_relu(inputs, n_filters, init):
     - 4D output tensor
     """
     conv = Conv2D(n_filters, 3, padding='same', kernel_initializer=init, activation='relu')(inputs)
-    conv = BatchNormalization(axis=1)(conv)
+    # conv = BatchNormalization(axis=1)(conv)
     return conv
 
 def add_unet_block_cont(inputs, n_filters, init):
@@ -90,7 +90,7 @@ def add_unet_block_cont(inputs, n_filters, init):
     - 4D output tensor after maxpool
     """
     conv1 = conv_bn_relu(inputs, n_filters, init)
-    conv2 = conv_bn_relu(inputs, n_filters, init)
+    conv2 = conv_bn_relu(conv1, n_filters, init)
     pool = MaxPool2D()(conv2)
     return conv2, pool
 
@@ -145,16 +145,14 @@ def get_unet(input_shape=(3, 256, 256), optimizer=Adam(lr=1e-3), depth=4,
     - optimizer : optimizer to use
     - init : Initialization for conv layers
     """
-    loss = weighted_loss({dice_coef_loss: 1., flat_cent: 0.})
-    metrics = [dice_coef, flat_cent]
+    loss = weighted_loss({dice_coef_loss: 0.75, bin_cross: 0.25})
+    metrics = [dice_coef, bin_cross]
 
     inputs = Input(input_shape)
 
-    bn1 = BatchNormalization(axis=1)(inputs)
-
     # Contraction
     conv_layers = []
-    out_layer = bn1
+    out_layer = inputs
     for i in range(depth):
         conv, out_layer = add_unet_block_cont(out_layer, n_base_filters*2**i, init)
         conv_layers.append(conv)
