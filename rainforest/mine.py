@@ -14,6 +14,7 @@ from scipy import misc
 from sklearn.preprocessing import label_binarize
 import keras.layers.core as C
 from keras.models import Sequential
+from keras.callbacks import ModelCheckpoint
 
 
 train = get_class_data(train=True, label='mines')
@@ -46,18 +47,18 @@ def data_generator_balanced(data, label, length, train):
     if not train:
         folder = '/test-jpg/'
     while True:
-        batch = np.zeros((length, 3, 256, 256))
+        batch = np.zeros((length, 256, 256, 3))
         labels = np.ones((50, 2))
         for i in range(length/2):  # get mine images
             img_name = np.random.choice(data[data[label] == 1]['image_name'].as_matrix())
             img = '..' + DATA_FOLDER + folder + img_name + '.jpg'
-            batch[i, :, :, :] = misc.imread(img)[:,:,:3].transpose(2,0,1)
+            batch[i, :, :, :] = misc.imread(img)[:,:,:3]
             # labels[i] = 1
             labels[i] = [0, 1]
         for i in range(length/2, length):  # get non mine images
             img_name = np.random.choice(data[data[label] == 0]['image_name'].as_matrix())
             img = '..' + DATA_FOLDER + folder + img_name + '.jpg'
-            batch[i, :, :, :] = misc.imread(img)[:,:,:3].transpose(2,0,1)
+            batch[i, :, :, :] = misc.imread(img)[:,:,:3]
             # labels[i] = 0
             labels[i] = [1, 0]
         
@@ -90,7 +91,7 @@ def augmentation_generator(data_gen):
 def model():
     model = Sequential()
 
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(3, 256, 256)))
+    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(256, 256, 3)))
     model.add(Conv2D(32, (3, 3), activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
@@ -104,7 +105,7 @@ def model():
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(2, activation='softmax'))
-    
+
     return model
 
 a = model()
@@ -118,4 +119,9 @@ print d[1].shape
 
 a.summary()
 
-a.fit_generator(gen, 10, epochs=1, verbose=2, callbacks=None, validation_data=val, validation_steps=100)
+filepath = 'weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5'
+checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1,
+                             save_best_only=True, mode='max')
+
+a.fit_generator(gen, 10, epochs=1, verbose=2, callbacks=None,
+                validation_data=val, validation_steps=100)
