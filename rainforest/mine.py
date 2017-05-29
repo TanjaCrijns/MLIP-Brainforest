@@ -112,11 +112,6 @@ a = model()
 a.compile(optimizer='adam', loss='categorical_crossentropy')
 
 
-d = gen.next()
-print d[0].shape
-print d[1].shape
-
-
 a.summary()
 
 filepath = 'weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5'
