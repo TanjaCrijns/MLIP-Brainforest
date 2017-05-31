@@ -75,7 +75,7 @@ def preprocess(image, target_size=None, augmentation=True, mask=None,
     """
     image_size = image.shape
     cv2_imsize = (image_size[1], image_size[0])
-    
+
     if target_size is not None:
         cv2_imsize = (target_size[1], target_size[0])
         image = cv2.resize(image, cv2_imsize, interpolation=cv2.INTER_LINEAR)
