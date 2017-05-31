@@ -70,12 +70,13 @@ def data_generator_balanced(data, label, length, train):
         labels = np.array(labels[idx])
         yield batch, labels 
 
-
 np.random.choice(train[train['conventional_mine'] == 1]['image_name'].as_matrix())
 
 
 gen = data_generator_balanced(train, 'conventional_mine', 30, True)
 val = data_generator_balanced(validation, 'conventional_mine', 30, True)
+
+print(gen.next())
 
 
 # augmentation generator
