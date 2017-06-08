@@ -27,6 +27,10 @@ def get_class_data(train=True, label='weather'):
         df = df[['image_name', 'clear', 'cloudy', 'haze', 'partly_cloudy']]
     elif label == 'mines':
         df = df[['image_name', 'artisinal_mine', 'conventional_mine']]
+    elif label == 'blooming':
+        df = df[['image_name', 'blooming']]
+    elif label == 'primary':
+        df = df[['image_name', 'primary', 'blooming']]
     elif label in labels:
         df = df[['image_name', label]]
     else:
